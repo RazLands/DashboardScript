@@ -1,0 +1,1 @@
+"C:\Program Files\VanDyke Software\SecureCRT\SecureCRT.exe" /SCRIPT "C:\DashboardScript\weeklyStats.py" /T /SSH2 10.0.80.80 /L Manager /PASSWORD Manager!
