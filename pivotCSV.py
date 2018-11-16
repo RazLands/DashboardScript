@@ -9,8 +9,8 @@ client_path = filedialog.askopenfilename()
 messagebox.askokcancel("GWT Dashboard Script By Raz","Please Choose The Usage CSV File Path")
 usage_path = filedialog.askopenfilename()
 # usage_path = 'C:\\Users\ptr748\Desktop\Dashboard\\Usage_5b7bc2f40267fc09544cab5a.csv'
-client_file = open(client_path, "r")
-usage_file = open(usage_path, "r")
+client_file = open(client_path, "r", encoding="utf8")
+usage_file = open(usage_path, "r", encoding="utf8")
 client_reader = csv.DictReader(client_file)
 usage_reader = csv.DictReader(usage_file)
 
@@ -33,9 +33,11 @@ def usage_counter():
 # Count clients amount at IL01, IL156, FL08, ZMY33, ZPL13 for both MW & MG
 WLAN = {"mguest": {"Total": 0, "FL08": 0, "IL156": 0, "IL01": 0, "ZPL13": 0, "ZMY33": 0},
         "mwireless": {"Total": 0, "FL08": 0, "IL156": 0, "IL01": 0, "ZPL13": 0, "ZMY33": 0}}
+mguest = ["M-Guest", "M-Guest-ZMY33-QoS", "M-Guest-QoS"]
+mwireless = ["LAB-Wireless", "M-Wireless"]
 def wlan_counter():
     for row in client_reader:
-        if row["Wlan"] == "M-Guest" and "0.0.0" not in row["IPv4 Address"]:
+        if row["Wlan"] in mguest and "0.0.0" not in row["IPv4 Address"]:
             # Total MGuest clients
             WLAN["mguest"]["Total"] += 1
 
@@ -60,7 +62,7 @@ def wlan_counter():
                 WLAN["mguest"]["ZPL13"] += 1
 
 
-        elif row["Wlan"] == "LAB-Wireless" and "0.0.0" not in row["IPv4 Address"]:
+        elif row["Wlan"] in mwireless and "0.0.0" not in row["IPv4 Address"]:
             # Total MWireless clients
             WLAN["mwireless"]["Total"] += 1
 
@@ -85,3 +87,5 @@ def wlan_counter():
                 WLAN["mwireless"]["ZPL13"] += 1
 
     return WLAN
+
+# print(wlan_counter())

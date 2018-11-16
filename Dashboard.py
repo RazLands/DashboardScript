@@ -2,18 +2,28 @@
 This script automating the weekly GWT dashboard presentation.
 To be able to update the dashboard, the script updates the data stored in the google-shit file.
 You need to share the spread shit with this Email: automation-dash@automation-dash.iam.gserviceaccount.com to grant access
+
+Change Log:
+V1.0.1 -
+ Fixed CSV files decoding
+ Fixed "Weekly total clients amount" table range
+
+v1.0.2 -
+ Count both "M-Wireless" and "LAB-Wireless" from usage.csv
+ Count all M-Guest WLANs: "M-Guest", "M-Guest-ZMY33-QoS", "M-Guest-QoS" from clints.csv
 '''
 
 print(
     " *********************************************** \n" \
     " **** Welcome to Automatic Dashboard Script **** \n" \
-    " *** This Script Was Coded By Raz Landsberger ** \n" \
+    " *** This Script Was Coded By Raz Landsberger ** \n"
+    " ********* Version 1.0.2 - 13/11/2018 ********** \n" \
     " *********************************************** \n"
 )
 
 # Import modules
 import csv
-import os
+import os, subprocess
 import gspread
 import pivotCSV
 from tkinter import messagebox
@@ -55,59 +65,18 @@ def read_temp_file(tempfile_path):
     return reader
 
 # use creds to create a client to interact with the Google Drive API
-script_path = "C:\DashboardScript\\"
-backup_file = open(f"{script_path}\Backups\\backup_{str(date.today())}.txt", "w")
+script_path = "N:\Share\Serv\LocAndExFTR\Local\Global Wifi\Global Wifi Team\Team folders\Raz\Dashboard script\\"
+exe_path = os.getcwd()
+backup_file = open(f"{exe_path}\Script_files\Backups\\backup_{str(date.today())}.txt", "w")
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-creds = ServiceAccountCredentials.from_json_keyfile_name(f"{script_path}client_secret.json", scope)
+creds = ServiceAccountCredentials.from_json_keyfile_name(f"{script_path}\client_secret.json", scope)
 client = gspread.authorize(creds)
 
 # Find a specific worksheet by its URL address
-file = client.open_by_url("https://docs.google.com/spreadsheets/d/1-NBSrRiLjPXLreCfbcBWJ2M7CEK1qG2BnRhNNMKkX4Q/")
-tempfile_path = f"{script_path}temp.csv"
+file = client.open_by_url("https://docs.google.com/spreadsheets/d/1BbJCfrZZuREbRESZCPYSaHXwfrnPu_U8-EqBgK9q0wM")
+#                          "https://docs.google.com/spreadsheets/d/1-NBSrRiLjPXLreCfbcBWJ2M7CEK1qG2BnRhNNMKkX4Q/")
+tempfile_path = f"{script_path}\\temp.csv"
 sheet = file.worksheet("Summary Graph")
-
-'''Weekly usage per site'''
-# Run SecureCRT script to check for sites' usage.
-os.system(f"{script_path}weeklyStats.bat")
-reader = read_temp_file(tempfile_path)
-mg_usage = (reader[0][1].strip("[").strip("]")).split(", ")
-mg_usage_rx = mg_usage[0:5]
-mg_usage_tx = mg_usage[5:10]
-
-mw_usage = (reader[0][0].strip("[").strip("]")).split(", ")
-mw_usage_rx = mw_usage[0:5]
-mw_usage_tx = mw_usage[5:10]
-
-# Fix the table of usage per site (FL08, IL156, IL01, ZMY33, ZPL13) for MW & MG
-usage_per_site = [
-    [float(mw_usage_rx[0]), float(mw_usage_tx[0].strip("[")), float(mg_usage_rx[0]), float(mg_usage_tx[0].strip("["))], # FL08: [MW RX, MW TX, MG RX, MG TX]
-    [float(mw_usage_rx[1]), float(mw_usage_tx[1]), float(mg_usage_rx[1]), float(mg_usage_tx[1])], # IL156: [MW RX, MW TX, MG RX, MG TX]
-    [float(mw_usage_rx[2]), float(mw_usage_tx[2]), float(mg_usage_rx[2]), float(mg_usage_tx[2])], # IL01: [MW RX, MW TX, MG RX, MG TX]
-    [float(mw_usage_rx[3]), float(mw_usage_tx[3]), float(mg_usage_rx[3]), float(mg_usage_tx[3])], # ZPL13: [MW RX, MW TX, MG RX, MG TX]
-    [float(mw_usage_rx[4].strip("]")), float(mw_usage_tx[4]), float(mg_usage_rx[4].strip("]")), float(mg_usage_tx[4])] # ZMY33: [MW RX, MW TX, MG RX, MG TX]
-]
-
-# Call week_update_func to update the "Weekly usage per site" table with the new data
-update_sheet(sheet,usage_per_site,'C','F',35)
-print(
-    "Weekly usage per site has updated\n"
-    " MW RX ------ MW TX ------ MG RX ------ MG TX \n"
-    f" {round(usage_per_site[0][0],2)} ------- {round(usage_per_site[0][1],2)} ------- {round(usage_per_site[0][2],2)} ------- {round(usage_per_site[0][3],2)}\n"
-    f" {round(usage_per_site[1][0],2)} ------- {round(usage_per_site[1][1],2)} ------- {round(usage_per_site[1][2],2)} ------- {round(usage_per_site[1][3],2)}\n"
-    f" {round(usage_per_site[2][0],2)} ------- {round(usage_per_site[2][1],2)} ------- {round(usage_per_site[2][2],2)} ------- {round(usage_per_site[2][3],2)}\n"
-    f" {round(usage_per_site[3][0],2)} ------- {round(usage_per_site[3][1],2)} ------- {round(usage_per_site[3][2],2)} ------- {round(usage_per_site[3][3],2)}\n"
-    f" {round(usage_per_site[4][0],2)} ------- {round(usage_per_site[4][1],2)} ------- {round(usage_per_site[4][2],2)} ------- {round(usage_per_site[4][3],2)}\n\n\n"
-)
-
-backup_file.write(
-    "Weekly usage per site\n"
-    " MW RX ------ MW TX ------ MG RX ------ MG TX \n"
-    f" {round(usage_per_site[0][0],2)} ------- {round(usage_per_site[0][1],2)} ------- {round(usage_per_site[0][2],2)} ------- {round(usage_per_site[0][3],2)}\n"
-    f" {round(usage_per_site[1][0],2)} ------- {round(usage_per_site[1][1],2)} ------- {round(usage_per_site[1][2],2)} ------- {round(usage_per_site[1][3],2)}\n"
-    f" {round(usage_per_site[2][0],2)} ------- {round(usage_per_site[2][1],2)} ------- {round(usage_per_site[2][2],2)} ------- {round(usage_per_site[2][3],2)}\n"
-    f" {round(usage_per_site[3][0],2)} ------- {round(usage_per_site[3][1],2)} ------- {round(usage_per_site[3][2],2)} ------- {round(usage_per_site[3][3],2)}\n"
-    f" {round(usage_per_site[4][0],2)} ------- {round(usage_per_site[4][1],2)} ------- {round(usage_per_site[4][2],2)} ------- {round(usage_per_site[4][3],2)}\n\n\n"
-)
 
 '''Clients amount per site'''
 # Receive MW & MG clients amount per site from CSV report
@@ -143,6 +112,50 @@ backup_file.write(
     f'  {clients_per_site[4][0]} ------- {clients_per_site[4][1]}\n\n\n'
 )
 
+'''Weekly usage per site'''
+# Run SecureCRT script to check for sites' usage.
+subprocess.call([f"{exe_path}\Script_files\weeklyStats.bat"])
+reader = read_temp_file(tempfile_path)
+mg_usage = (reader[0][1].strip("[").strip("]")).split(", ")
+mg_usage_rx = mg_usage[0:5]
+mg_usage_tx = mg_usage[5:10]
+
+mw_usage = (reader[0][0].strip("[").strip("]")).split(", ")
+mw_usage_rx = mw_usage[0:5]
+mw_usage_tx = mw_usage[5:10]
+
+# Fix the table of usage per site (FL08, IL156, IL01, ZMY33, ZPL13) for MW & MG
+# '''Maybe this will work: float(f"{mw_usage_rx[0]:.2f}") '''
+usage_per_site = [
+    [float(mw_usage_rx[0]), float(mw_usage_tx[0].strip('[')), float(mg_usage_rx[0]), float(mg_usage_tx[0].strip('['))], # FL08: [MW RX, MW TX, MG RX, MG TX]
+    [float(mw_usage_rx[1]), float(mw_usage_tx[1]), float(mg_usage_rx[1]), float(mg_usage_tx[1])], # IL156: [MW RX, MW TX, MG RX, MG TX]
+    [float(mw_usage_rx[2]), float(mw_usage_tx[2]), float(mg_usage_rx[2]), float(mg_usage_tx[2])], # IL01: [MW RX, MW TX, MG RX, MG TX]
+    [float(mw_usage_rx[3]), float(mw_usage_tx[3]), float(mg_usage_rx[3]), float(mg_usage_tx[3])], # ZPL13: [MW RX, MW TX, MG RX, MG TX]
+    [float(mw_usage_rx[4].strip("]")), float(mw_usage_tx[4]), float(mg_usage_rx[4].strip("]")), float(mg_usage_tx[4])] # ZMY33: [MW RX, MW TX, MG RX, MG TX]
+]
+
+# Call week_update_func to update the "Weekly usage per site" table with the new data
+update_sheet(sheet,usage_per_site,'C','F',35)
+print(
+    "\nWeekly usage per site has updated\n"
+    " MW RX ------ MW TX ------ MG RX ------ MG TX \n"
+    f" {round(usage_per_site[0][0],2)} ------- {round(usage_per_site[0][1],2)} ------- {round(usage_per_site[0][2],2)} ------- {round(usage_per_site[0][3],2)}\n"
+    f" {round(usage_per_site[1][0],2)} ------- {round(usage_per_site[1][1],2)} ------- {round(usage_per_site[1][2],2)} ------- {round(usage_per_site[1][3],2)}\n"
+    f" {round(usage_per_site[2][0],2)} ------- {round(usage_per_site[2][1],2)} ------- {round(usage_per_site[2][2],2)} ------- {round(usage_per_site[2][3],2)}\n"
+    f" {round(usage_per_site[3][0],2)} ------- {round(usage_per_site[3][1],2)} ------- {round(usage_per_site[3][2],2)} ------- {round(usage_per_site[3][3],2)}\n"
+    f" {round(usage_per_site[4][0],2)} ------- {round(usage_per_site[4][1],2)} ------- {round(usage_per_site[4][2],2)} ------- {round(usage_per_site[4][3],2)}\n\n\n"
+)
+
+backup_file.write(
+    "Weekly usage per site\n"
+    " MW RX ------ MW TX ------ MG RX ------ MG TX \n"
+    f" {round(usage_per_site[0][0],2)} ------- {round(usage_per_site[0][1],2)} ------- {round(usage_per_site[0][2],2)} ------- {round(usage_per_site[0][3],2)}\n"
+    f" {round(usage_per_site[1][0],2)} ------- {round(usage_per_site[1][1],2)} ------- {round(usage_per_site[1][2],2)} ------- {round(usage_per_site[1][3],2)}\n"
+    f" {round(usage_per_site[2][0],2)} ------- {round(usage_per_site[2][1],2)} ------- {round(usage_per_site[2][2],2)} ------- {round(usage_per_site[2][3],2)}\n"
+    f" {round(usage_per_site[3][0],2)} ------- {round(usage_per_site[3][1],2)} ------- {round(usage_per_site[3][2],2)} ------- {round(usage_per_site[3][3],2)}\n"
+    f" {round(usage_per_site[4][0],2)} ------- {round(usage_per_site[4][1],2)} ------- {round(usage_per_site[4][2],2)} ------- {round(usage_per_site[4][3],2)}\n\n\n"
+)
+
 '''Weekly usage per WLAN'''
 # Receive MW & MG clients' usage from CSV report
 clients_usage = pivotCSV.usage_counter()
@@ -175,9 +188,9 @@ backup_file.write(
 
 '''Weekly total clients amount'''
 # Call week_update_func to update the "Weekly total clients amount" table with the new data
-wu_clients = week_update_func("A81","C85")
+wu_clients = week_update_func("A82","C86")
 wu_clients[0][0] = [f"week {wu_clients[1]}",int(mguest["Total"]),int(mwireless["Total"])]
-update_sheet(sheet, wu_clients[0], 'A', 'C', 81)
+update_sheet(sheet, wu_clients[0], 'A', 'C', 82)
 print(
     "Weekly total clients amount has updated\n"
     " Week #  ------ M-Wireless ---- M-Guest\n"
