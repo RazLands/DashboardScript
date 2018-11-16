@@ -1,6 +1,6 @@
 # $language = "python"
 # $interface = "1.0"
-import csv, os, time
+import csv
 
 def cli2file(tempfile_path, waitStrs):
     # stats list variable:
@@ -89,30 +89,21 @@ def clear_statistics():
 
 def main():
     crt.Screen.Synchronous = True  # Start CRT session
-    tempfile_path = "N:\Share\Serv\LocAndExFTR\Local\Global Wifi\Global Wifi Team\Team folders\Raz\Dashboard script\\temp.csv"
+    tempfile_path = "C:\DashboardScript\\temp.csv"
     waitStrs = ["\n", "60#", "Done"]
-    sleep_time = 0.3
+
     crt.Screen.Send("en" + chr(13))
     crt.Screen.Send("sh wire wlan statistics on AMERFL08" + chr(13))
-    # time.sleep(sleep_time)
     crt.Screen.Send("sh wire wlan statistics on AMERIL156" + chr(13))
-    # time.sleep(sleep_time)
     crt.Screen.Send("sh wire wlan statistics on AMERIL01" + chr(13))
-    # time.sleep(sleep_time)
     crt.Screen.Send("sh wire wlan statistics on EMEAZPL13" + chr(13))
-    # time.sleep(sleep_time)
     crt.Screen.Send("sh wire wlan statistics on ASIAZMY33" + chr(13))
-    # time.sleep(sleep_time)
-    # crt.Screen.Send("service clear wireless wlan statistics on AMERFL08" + chr(13))
-    # time.sleep(sleep_time)
-    # crt.Screen.Send("service clear wireless wlan statistics on AMERIL156" + chr(13))
-    # time.sleep(sleep_time)
-    # crt.Screen.Send("service clear wireless wlan statistics on AMERIL01" + chr(13))
-    # time.sleep(sleep_time)
-    # crt.Screen.Send("service clear wireless wlan statistics on EMEAZPL13" + chr(13))
-    # time.sleep(sleep_time)
-    # crt.Screen.Send("service clear wireless wlan statistics on ASIAZMY33" + chr(13))
-    # time.sleep(sleep_time)
+    crt.Screen.Send("sh ver" + chr(13))
+    crt.Screen.Send("sh ver" + chr(13))
+    crt.Screen.Send("sh ver" + chr(13))
+    crt.Screen.Send("sh ver" + chr(13))
+    crt.Screen.Send("sh ver" + chr(13))
+    crt.Screen.Send("sh ver" + chr(13))
     crt.Screen.Send("Done" + chr(13))
 
     stats = cli2file(tempfile_path, waitStrs)
