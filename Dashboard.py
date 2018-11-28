@@ -4,25 +4,28 @@ To be able to update the dashboard, the script updates the data stored in the go
 You need to share the spread shit with this Email: automation-dash@automation-dash.iam.gserviceaccount.com to grant access
 
 Change Log:
-V1.0.1 -
- Fixed CSV files decoding
- Fixed "Weekly total clients amount" table range
+Ver 1.0.3 -
+ Added a summarize email to confirm process has done.
 
-v1.0.2 -
+Ver1.0.2 -
  Count both "M-Wireless" and "LAB-Wireless" from usage.csv
  Count all M-Guest WLANs: "M-Guest", "M-Guest-ZMY33-QoS", "M-Guest-QoS" from clints.csv
+
+Ver1.0.1 -
+ Fixed CSV files decoding
+ Fixed "Weekly total clients amount" table range
 '''
 
 print(
     " *********************************************** \n" \
     " **** Welcome to Automatic Dashboard Script **** \n" \
     " *** This Script Was Coded By Raz Landsberger ** \n"
-    " ********* Version 1.0.2 - 13/11/2018 ********** \n" \
+    " ********* Version 1.0.3 - 28/11/2018 ********** \n" \
     " *********************************************** \n"
 )
 
 # Import modules
-import csv
+import csv, smtplib
 import os, subprocess
 import gspread
 import pivotCSV
@@ -63,6 +66,21 @@ def read_temp_file(tempfile_path):
     reader = list(csv.reader(tempfile))
 
     return reader
+
+def send_email(week):
+    to = 'GWTENG@motorolasolutions.com, wifi.support@motorolasolutions.com'
+    gmail_user = 'wifi.support@motorolasolutions.com'
+    gmail_pwd = 'Motorola12211221'
+    smtpserver = smtplib.SMTP("smtp.gmail.com", 587)
+    smtpserver.ehlo()
+    smtpserver.starttls()
+    smtpserver.ehlo()  # extra characters to permit edit
+    smtpserver.login(gmail_user, gmail_pwd)
+    header = 'To:' + to + '\n' + 'From: ' + gmail_user + '\n' + f'Subject:Dashboard script finished - Week {week} \n'
+    msg = header + f'\n Dashboard script run has finished updating week {week} statistics, please check the weekly dashboard at Converge site'
+    smtpserver.sendmail(gmail_user, to, msg)
+
+    smtpserver.quit()
 
 # use creds to create a client to interact with the Google Drive API
 script_path = "N:\Share\Serv\LocAndExFTR\Local\Global Wifi\Global Wifi Team\Team folders\Raz\Dashboard script\\"
@@ -214,6 +232,9 @@ backup_file.write(
 backup_file.close()
 print("The Dashboard is now updated to week {}".format(wu_usage[1]))
 messagebox.showinfo("GWT Dashboard Script By Raz","The Dashboard is now updated to week {}".format(wu_usage[1]))
+
+# Send end of process email to GWTENG (wu_usage[1] = week number)
+send_email(wu_usage[1])
 
 # Run SecureCRT again
 os.system('"C:\Program Files\VanDyke Software\SecureCRT\SecureCRT.exe"')
