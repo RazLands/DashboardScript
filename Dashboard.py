@@ -4,6 +4,9 @@ To be able to update the dashboard, the script updates the data stored in the go
 You need to share the spread shit with this Email: automation-dash@automation-dash.iam.gserviceaccount.com to grant access
 
 Change Log:
+Ver 1.0.4 -
+ Added clear statistics in WeeklyStats.py
+
 Ver 1.0.3 -
  Added a summarize email to confirm process has done.
 
@@ -20,7 +23,7 @@ print(
     " *********************************************** \n" \
     " **** Welcome to Automatic Dashboard Script **** \n" \
     " *** This Script Was Coded By Raz Landsberger ** \n"
-    " ********* Version 1.0.3 - 28/11/2018 ********** \n" \
+    " ********* Version 1.0.4 - 07/12/2018 ********** \n" \
     " *********************************************** \n"
 )
 
