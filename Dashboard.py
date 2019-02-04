@@ -4,26 +4,31 @@ To be able to update the dashboard, the script updates the data stored in the go
 You need to share the spread shit with this Email: automation-dash@automation-dash.iam.gserviceaccount.com to grant access
 
 Change Log:
+Ver 1.0.5 -
+ #Fixed week 1-9 bug (number with 1 digits doesn't being read correctly)
+ #Fixed 52 weeks (year) loop
+ #Added time to backup files
+
 Ver 1.0.4 -
- Added clear statistics in WeeklyStats.py
+ #Added clear statistics in WeeklyStats.py
 
 Ver 1.0.3 -
- Added a summarize email to confirm process has done.
+ #Added a summarize email to confirm process has done.
 
 Ver1.0.2 -
- Count both "M-Wireless" and "LAB-Wireless" from usage.csv
- Count all M-Guest WLANs: "M-Guest", "M-Guest-ZMY33-QoS", "M-Guest-QoS" from clints.csv
+ #Count both "M-Wireless" and "LAB-Wireless" from usage.csv
+ #Count all M-Guest WLANs: "M-Guest", "M-Guest-ZMY33-QoS", "M-Guest-QoS" from clints.csv
 
 Ver1.0.1 -
- Fixed CSV files decoding
- Fixed "Weekly total clients amount" table range
+ #Fixed CSV files decoding
+ #Fixed "Weekly total clients amount" table range
 '''
 
 print(
     " *********************************************** \n" \
     " **** Welcome to Automatic Dashboard Script **** \n" \
     " *** This Script Was Coded By Raz Landsberger ** \n"
-    " ********* Version 1.0.4 - 07/12/2018 ********** \n" \
+    " ********* Version 1.0.5 - 01/14/2018 ********** \n" \
     " *********************************************** \n"
 )
 
@@ -35,7 +40,7 @@ import pivotCSV
 from tkinter import messagebox
 from oauth2client.service_account import ServiceAccountCredentials
 from decimal import Decimal
-from datetime import date
+import datetime
 
 # Update (write to) a specific range of cells in Google sheets by a given table of data
 def update_sheet(ws, table, rangeStart, rangeEnd, firstRow):
@@ -54,7 +59,14 @@ def update_sheet(ws, table, rangeStart, rangeEnd, firstRow):
 
 # Update the "last 5 weeks" table and push the new week at the top
 def week_update_func(startRange, endRange):
-    current_week = int(str(file.values_get(startRange)["values"][0])[7:9]) + 1
+    # Check if week is less then 10 to extract the correct week number from the sheet
+    if "'" in str(file.values_get(startRange)["values"][0])[7:9]:
+        current_week = int(str(file.values_get(startRange)["values"][0])[7:8]) + 1
+    else:
+        if int(str(file.values_get(startRange)["values"][0])[7:9]) < 52:
+            current_week = int(str(file.values_get(startRange)["values"][0])[7:9]) + 1
+        else: current_week = 1
+
     week_update = file.values_get(startRange+":"+endRange)
     i = 4
     while i > 0:
@@ -88,7 +100,7 @@ def send_email(week):
 # use creds to create a client to interact with the Google Drive API
 script_path = "N:\Share\Serv\LocAndExFTR\Local\Global Wifi\Global Wifi Team\Team folders\Raz\Dashboard script\\"
 exe_path = os.getcwd()
-backup_file = open(f"{exe_path}\Script_files\Backups\\backup_{str(date.today())}.txt", "w")
+backup_file = open(f"{exe_path}\Script_files\Backups\\backup_{str(datetime.datetime.now().strftime('%y-%m-%d_%H%M'))}.txt", "w")
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
 creds = ServiceAccountCredentials.from_json_keyfile_name(f"{script_path}\client_secret.json", scope)
 client = gspread.authorize(creds)
